@@ -1,0 +1,94 @@
+# Magic Craft — Developer Log
+# Format: [vX.Y.Z] YYYY-MM-DD ▶ detailed technical notes per system/feature
+# Separate from changelog.txt — this file is for developers, not players.
+═══════════════════════════════════════════════
+
+[v1.0.2] 2026-02-26
+═══════════════════════════════════════════════
+
+## [Progression System — UI & Networking]
+
+### What was done
+Implemented a full client-side stat screen (`ProgressionScreen`) with:
+- RPG-styled custom background panel (semi-transparent black with border)
+- Per-stat rows: name, current level, +/- buttons
+- Hover effects on all interactive elements
+- Dynamic centering using `this.width` / `this.height` (GUI-Scale safe)
+
+Implemented server-authoritative stat leveling:
+- C2S packet: `LevelUpStatC2SPacket` (stat name, direction)
+- Server validates available points before applying
+- S2C sync: `ProgressionSyncS2CPacket` sends updated state back to client
+
+### Why this approach
+Cardinal Components was chosen over custom NBT because it provides automatic sync helpers and clean per-player data attachment without manual `ServerPlayerEntity` cast chains.
+
+Client screen never writes stats directly — all mutations go through server validation to prevent exploitation in LAN environments.
+
+### Files affected
+- src/.../screen/ProgressionScreen.java — full implementation
+- src/.../network/LevelUpStatC2SPacket.java — new packet
+- src/.../network/ProgressionSyncS2CPacket.java — new sync packet
+- src/.../component/ProgressionComponent.java — holds stats, implements sync
+
+### Known issues / TODO
+- Stat display ordering is currently alphabetical (not priority-ordered)
+- No animation for level-up feedback (planned)
+
+---
+
+## [Mod Commands]
+
+### What was done
+Added `/magiccraft` command prefix for all mod commands.
+Added `/magichelp` to list all available commands with descriptions.
+Fixed keybind hint in `/magiccraft help` — was showing 'O', corrected to 'P'.
+
+### Files affected
+- src/.../command/MagicCraftCommands.java — command registration
+
+---
+
+## [Bug Fix — Double Sync on Level Up]
+
+### What was done
+Fixed duplicate sync packets being sent when a player leveled up a stat.
+
+### Root cause
+`ProgressionPackets` was calling `sync()` twice: once explicitly after mutation, and once via a component listener that also fired on mutation. The listener was the correct mechanism; removed the explicit call.
+
+### Files affected
+- src/.../network/ProgressionPackets.java — removed redundant `sync()` call
+
+---
+
+## [Project Setup]
+
+### What was done
+Configured GitHub remote: `https://github.com/Deruk0/magic.craft`
+Removed empty `LivingEntityMixin` (was causing Mixin warnings on startup).
+Fixed Java version in Mixin settings to `JAVA_17` to match Fabric 1.20.1 target.
+
+### Files affected
+- src/.../mixin/ — removed LivingEntityMixin.java
+- src/main/resources/mymod.mixins.json — removed LivingEntityMixin entry
+- build.gradle — updated Fabric Loom version
+
+═══════════════════════════════════════════════
+[v1.0.0] 2026-02-25
+═══════════════════════════════════════════════
+
+## [Initial Project Structure]
+
+### What was done
+Created Fabric 1.20.1 mod skeleton:
+- `build.gradle`, `gradle.properties`, `fabric.mod.json`
+- Main mod entrypoint `MagicCraftMod.java`
+- Basic localization file `en_us.json`
+- Mixin configuration
+
+### Why this approach
+Fabric chosen over Forge for lighter weight and better compatibility with the target MC version (1.20.1).
+
+### Files affected
+- All initial project files

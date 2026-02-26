@@ -12,10 +12,10 @@ public class ProgressionKeybinds {
 
     public static void register() {
         openProgressionUiKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.template-mod.open_progression", // Translation key
+                "key.magiccraft.open_progression", // Translation key
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_P,
-                "category.template-mod.keys" // Translation category
+                "category.magiccraft.keys" // Translation category
         ));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {

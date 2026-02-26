@@ -35,7 +35,36 @@ public interface ProgressionData {
 
     void setMiningSpeedLevel(int level);
 
+    float getCurrentMana();
+
+    void setCurrentMana(float mana);
+
+    int getMaxManaLevel();
+
+    void setMaxManaLevel(int level);
+
+    int getManaRegenLevel();
+
+    void setManaRegenLevel(int level);
+
+    boolean hasEnoughMana(float amount);
+
+    void consumeMana(float amount);
+
     void resetProgression();
 
     void syncProgressionData();
+
+    /**
+     * Copy all progression data from another player's ProgressionData.
+     * Implemented in PlayerEntityMixin; used on respawn via
+     * ServerPlayerEvents.COPY_FROM.
+     */
+    void copyProgressionFrom(ProgressionData source);
+
+    /**
+     * Force re-application of all stat attributes (e.g. after player loads from
+     * disk).
+     */
+    void refreshAttributes();
 }

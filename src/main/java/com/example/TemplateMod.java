@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TemplateMod implements ModInitializer {
-	public static final String MOD_ID = "template-mod";
+	public static final String MOD_ID = "magiccraft";
 
 	// This logger is used to write text to the console and the log file.
 	// It is considered best practice to use your mod id as the logger's name.
@@ -20,6 +20,7 @@ public class TemplateMod implements ModInitializer {
 		// Proceed with mild caution.
 
 		LOGGER.info("Initializing TemplateMod...");
+		com.example.core.registry.ModItems.register();
 		com.example.net.packet.ProgressionPackets.registerC2SPackets();
 		com.example.core.event.ServerEventsRegistration.registerEvents();
 		com.example.core.command.ProgressionCommands.register();

@@ -1,5 +1,6 @@
 package com.example.net.packet;
 
+import com.example.TemplateMod;
 import com.example.core.progression.ProgressionData;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
@@ -9,8 +10,9 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 
 public class ProgressionPackets {
-    public static final Identifier LEVEL_UP_STAT_C2S = new Identifier("template-mod", "level_up_stat");
-    public static final Identifier SYNC_PROGRESSION_DATA_S2C = new Identifier("template-mod", "sync_progression_data");
+    public static final Identifier LEVEL_UP_STAT_C2S = new Identifier(TemplateMod.MOD_ID, "level_up_stat");
+    public static final Identifier SYNC_PROGRESSION_DATA_S2C = new Identifier(TemplateMod.MOD_ID,
+            "sync_progression_data");
 
     public static void registerC2SPackets() {
         ServerPlayNetworking.registerGlobalReceiver(LEVEL_UP_STAT_C2S,
@@ -52,6 +54,18 @@ public class ProgressionPackets {
                                             leveledUp = true;
                                         }
                                     }
+                                    case "max_mana" -> {
+                                        if (data.getMaxManaLevel() < 20) {
+                                            data.setMaxManaLevel(data.getMaxManaLevel() + 1);
+                                            leveledUp = true;
+                                        }
+                                    }
+                                    case "mana_regen" -> {
+                                        if (data.getManaRegenLevel() < 20) {
+                                            data.setManaRegenLevel(data.getManaRegenLevel() + 1);
+                                            leveledUp = true;
+                                        }
+                                    }
                                 }
                                 if (leveledUp) {
                                     data.setStatPoints(data.getStatPoints() - 1);
@@ -73,6 +87,9 @@ public class ProgressionPackets {
                     int health = buf.readInt();
                     int luck = buf.readInt();
                     int mining = buf.readInt();
+                    float currentMana = buf.readFloat();
+                    int maxMana = buf.readInt();
+                    int manaRegen = buf.readInt();
 
                     client.execute(() -> {
                         if (client.player instanceof ProgressionData data) {
@@ -84,6 +101,9 @@ public class ProgressionPackets {
                             data.setHealthLevel(health);
                             data.setLuckLevel(luck);
                             data.setMiningSpeedLevel(mining);
+                            data.setMaxManaLevel(maxMana);
+                            data.setManaRegenLevel(manaRegen);
+                            data.setCurrentMana(currentMana);
                         }
                     });
                 });
@@ -100,6 +120,9 @@ public class ProgressionPackets {
             buf.writeInt(data.getHealthLevel());
             buf.writeInt(data.getLuckLevel());
             buf.writeInt(data.getMiningSpeedLevel());
+            buf.writeFloat(data.getCurrentMana());
+            buf.writeInt(data.getMaxManaLevel());
+            buf.writeInt(data.getManaRegenLevel());
             ServerPlayNetworking.send(player, SYNC_PROGRESSION_DATA_S2C, buf);
         }
     }

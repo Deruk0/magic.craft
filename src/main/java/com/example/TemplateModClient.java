@@ -8,5 +8,7 @@ public class TemplateModClient implements ClientModInitializer {
     public void onInitializeClient() {
         ProgressionPackets.registerS2CPackets();
         com.example.client.keybind.ProgressionKeybinds.register();
+        net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback.EVENT
+                .register(new com.example.client.ui.ManaHudOverlay());
     }
 }
