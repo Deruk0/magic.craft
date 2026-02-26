@@ -74,7 +74,7 @@ public class ProgressionScreen extends Screen {
                 // Inner thin border for depth
                 context.drawBorder(x + 2, y + 2, BG_WIDTH - 4, BG_HEIGHT - 4, 0x55FFFFFF);
 
-                ProgressionData data = (ProgressionData) this.client.player;
+                ProgressionData data = this.client.player != null ? (ProgressionData) this.client.player : null;
                 if (data != null) {
                         boolean hasPoints = data.getStatPoints() > 0;
                         strengthBtn.active = hasPoints && data.getStrengthLevel() < 20;

@@ -8,3 +8,11 @@
 - Добавлена система локализации (en_us.json)
 - Исправлена версия Java в настройках Mixin (на JAVA_17)
 - Обновлена версия Fabric Loom в build.gradle
+
+## v1.0.2
+- Исправлена подсказка клавиши в /magiccraft help ('O' → 'P')
+- Устранена двойная синхронизация при повышении характеристик (ProgressionPackets)
+- Исправлен потенциальный NPE в ProgressionScreen при касте игрока
+- Удалён пустой LivingEntityMixin
+- Настроен GitHub remote на https://github.com/Deruk0/magic.craft
+- Улучшены описания skills (ui-development, update-version) для лучшего триггеринга

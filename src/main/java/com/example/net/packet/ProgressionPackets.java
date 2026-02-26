@@ -55,7 +55,6 @@ public class ProgressionPackets {
                                 }
                                 if (leveledUp) {
                                     data.setStatPoints(data.getStatPoints() - 1);
-                                    data.syncProgressionData();
                                 }
                             }
                         }

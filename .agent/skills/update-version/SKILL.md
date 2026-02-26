@@ -1,6 +1,6 @@
 ---
 name: update-version
-description: Commits and pushes all modified files to the corresponding GitHub repository. Use this skill when the user asks to commit, push, save changes to GitHub, or update versions.
+description: Commits and pushes all modified files to the corresponding GitHub repository. Use this skill when the user asks to commit, push, save changes to GitHub, update versions, deploy code, bump version, save progress, or sync with remote. Even if the user simply says "push it" or "save my work", this skill should be used.
 ---
 
 # Update Versions
