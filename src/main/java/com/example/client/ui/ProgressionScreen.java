@@ -1,6 +1,7 @@
 package com.example.client.ui;
 
 import com.example.core.progression.ProgressionData;
+import com.example.item.FireStaffItem;
 import com.example.net.packet.ProgressionPackets;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
@@ -20,6 +21,7 @@ public class ProgressionScreen extends Screen {
 
         private ButtonWidget strengthBtn, speedBtn, healthBtn, luckBtn, miningBtn;
         private ButtonWidget maxManaBtn, manaRegenBtn;
+        private ButtonWidget unlockFireballBtn;
 
         public ProgressionScreen() {
                 super(Text.translatable("screen.magiccraft.progression"));
@@ -62,6 +64,13 @@ public class ProgressionScreen extends Screen {
                                 ButtonWidget.builder(Text.literal("+"), button -> sendLevelUpPacket("mana_regen"))
                                                 .dimensions(btnX, startY + spacing, btnW, btnH).build());
 
+                // Fireball skill unlock button (visible only on Magic tab when holding Fire
+                // Staff)
+                this.unlockFireballBtn = this.addDrawableChild(
+                                ButtonWidget.builder(Text.literal("Unlock"),
+                                                button -> sendUnlockSkillPacket("fireball"))
+                                                .dimensions(btnX - 40, startY + spacing * 3, 56, btnH).build());
+
                 updateVisibility();
         }
 
@@ -74,12 +83,31 @@ public class ProgressionScreen extends Screen {
 
                 maxManaBtn.visible = isMagicTab;
                 manaRegenBtn.visible = isMagicTab;
+
+                // unlockFireballBtn visibility is dynamically set in render()
+                unlockFireballBtn.visible = false;
         }
 
         private void sendLevelUpPacket(String statName) {
                 PacketByteBuf buf = PacketByteBufs.create();
                 buf.writeString(statName);
                 ClientPlayNetworking.send(ProgressionPackets.LEVEL_UP_STAT_C2S, buf);
+        }
+
+        private void sendUnlockSkillPacket(String skillName) {
+                PacketByteBuf buf = PacketByteBufs.create();
+                buf.writeString(skillName);
+                ClientPlayNetworking.send(ProgressionPackets.UNLOCK_STAFF_SKILL_C2S, buf);
+        }
+
+        /**
+         * Returns true if the player is currently holding a Fire Staff in either hand.
+         */
+        private boolean isHoldingFireStaff() {
+                if (this.client == null || this.client.player == null)
+                        return false;
+                return this.client.player.getMainHandStack().getItem() instanceof FireStaffItem
+                                || this.client.player.getOffHandStack().getItem() instanceof FireStaffItem;
         }
 
         @Override
@@ -186,12 +214,23 @@ public class ProgressionScreen extends Screen {
                                                 "Chance to double ore drops");
                                 drawStatEx(context, "⛏ Efficiency", data.getMiningSpeedLevel(), startY + spacing * 4,
                                                 0xFFFFCC00, "Mining Speed: +7.5%");
+
+                                // Hide fireball button on Physical tab
+                                unlockFireballBtn.visible = false;
                         } else {
                                 drawStatEx(context, "❈ Max Mana", data.getMaxManaLevel(), startY, 0xFF44BBFF,
                                                 "Increases maximum mana pool by 10");
                                 drawStatEx(context, "❂ Mana Regen", data.getManaRegenLevel(), startY + spacing,
                                                 0xFF77DDFF,
                                                 "Speeds up mana recovery (+0.5/sec)");
+
+                                // Fire Staff Skill Row — visible only when holding fire staff
+                                boolean holdingFireStaff = isHoldingFireStaff();
+                                if (holdingFireStaff) {
+                                        drawFireballSkillRow(context, data, startY + spacing * 2);
+                                } else {
+                                        unlockFireballBtn.visible = false;
+                                }
                         }
 
                 }
@@ -200,6 +239,50 @@ public class ProgressionScreen extends Screen {
 
                 if (data != null) {
                         drawTooltips(context, mouseX, mouseY);
+                }
+        }
+
+        /**
+         * Draws the Fireball skill unlock row below the mana stats.
+         * Shows "🔥 Fireball Skill" with a lock/unlock state indicator and an unlock
+         * button.
+         */
+        private void drawFireballSkillRow(DrawContext context, ProgressionData data, int rowY) {
+                boolean unlocked = data.isFireballSkillUnlocked();
+
+                // Section divider
+                context.fill(x + 10, rowY - 4, x + BG_WIDTH - 10, rowY - 3, 0x55FFFFFF);
+
+                // Fire gradient background strip
+                context.fillGradient(x + 10, rowY, x + BG_WIDTH - 10, rowY + 30, 0x44330000, 0x44110000);
+                context.drawBorder(x + 10, rowY, BG_WIDTH - 20, 30, 0x88FF4400);
+
+                // Skill name
+                context.drawTextWithShadow(this.textRenderer, "🔥 Fireball", x + 16, rowY + 4, 0xFFFF6622);
+
+                if (unlocked) {
+                        // Unlocked state
+                        String unlockedText = "✔ Unlocked";
+                        context.drawTextWithShadow(this.textRenderer, unlockedText,
+                                        x + BG_WIDTH - 16 - this.textRenderer.getWidth(unlockedText), rowY + 4,
+                                        0xFFFFD700);
+                        context.drawTextWithShadow(this.textRenderer, "Shoot a fireball that explodes and ignites",
+                                        x + 16, rowY + 16, 0xFFAAAAAA);
+                        unlockFireballBtn.visible = false;
+                } else {
+                        // Locked state — show requirement and button
+                        int customLevel = data.getCustomLevel();
+                        boolean canAfford = customLevel >= 25;
+                        String costText = "Requires: Lvl 25 (you: " + customLevel + ")";
+                        context.drawTextWithShadow(this.textRenderer, costText, x + 16, rowY + 16,
+                                        canAfford ? 0xFF55FF55 : 0xFFFF5555);
+
+                        // Position the unlock button on the right side
+                        int btnX = x + BG_WIDTH - 14 - 56;
+                        unlockFireballBtn.setX(btnX);
+                        unlockFireballBtn.setY(rowY + 4);
+                        unlockFireballBtn.active = canAfford;
+                        unlockFireballBtn.visible = true;
                 }
         }
 

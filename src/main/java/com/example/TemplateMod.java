@@ -21,6 +21,7 @@ public class TemplateMod implements ModInitializer {
 
 		LOGGER.info("Initializing TemplateMod...");
 		com.example.core.registry.ModItems.register();
+		com.example.entity.ModEntityTypes.register();
 		com.example.net.packet.ProgressionPackets.registerC2SPackets();
 		com.example.core.event.ServerEventsRegistration.registerEvents();
 		com.example.core.command.ProgressionCommands.register();

@@ -36,6 +36,8 @@ public abstract class PlayerEntityMixin implements ProgressionData {
     private int maxManaLevel = 0;
     @Unique
     private int manaRegenLevel = 0;
+    @Unique
+    private boolean fireballSkillUnlocked = false;
 
     @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
     private void writeProgressionDataToNbt(NbtCompound nbt, CallbackInfo ci) {
@@ -51,6 +53,7 @@ public abstract class PlayerEntityMixin implements ProgressionData {
         modData.putFloat("CurrentMana", this.currentMana);
         modData.putInt("MaxManaLevel", this.maxManaLevel);
         modData.putInt("ManaRegenLevel", this.manaRegenLevel);
+        modData.putBoolean("FireballSkillUnlocked", this.fireballSkillUnlocked);
         nbt.put("TemplateModProgression", modData);
     }
 
@@ -75,6 +78,9 @@ public abstract class PlayerEntityMixin implements ProgressionData {
             } else {
                 this.currentMana = 50.0f;
             }
+            if (modData.contains("FireballSkillUnlocked")) {
+                this.fireballSkillUnlocked = modData.getBoolean("FireballSkillUnlocked");
+            }
             updateAttributes();
         }
     }
@@ -98,6 +104,7 @@ public abstract class PlayerEntityMixin implements ProgressionData {
         this.currentMana = oldData.getCurrentMana();
         this.maxManaLevel = oldData.getMaxManaLevel();
         this.manaRegenLevel = oldData.getManaRegenLevel();
+        this.fireballSkillUnlocked = oldData.isFireballSkillUnlocked();
         updateAttributes();
         syncProgressionData();
     }
@@ -368,6 +375,7 @@ public abstract class PlayerEntityMixin implements ProgressionData {
         this.maxManaLevel = 0;
         this.manaRegenLevel = 0;
         this.currentMana = 50.0f;
+        this.fireballSkillUnlocked = false;
         updateAttributes();
         syncProgressionData();
     }
@@ -382,5 +390,16 @@ public abstract class PlayerEntityMixin implements ProgressionData {
     @Override
     public void refreshAttributes() {
         updateAttributes();
+    }
+
+    @Override
+    public boolean isFireballSkillUnlocked() {
+        return fireballSkillUnlocked;
+    }
+
+    @Override
+    public void setFireballSkillUnlocked(boolean unlocked) {
+        this.fireballSkillUnlocked = unlocked;
+        syncProgressionData();
     }
 }

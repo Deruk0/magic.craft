@@ -11,6 +11,7 @@ import net.minecraft.util.Identifier;
 
 public class ProgressionPackets {
     public static final Identifier LEVEL_UP_STAT_C2S = new Identifier(TemplateMod.MOD_ID, "level_up_stat");
+    public static final Identifier UNLOCK_STAFF_SKILL_C2S = new Identifier(TemplateMod.MOD_ID, "unlock_staff_skill");
     public static final Identifier SYNC_PROGRESSION_DATA_S2C = new Identifier(TemplateMod.MOD_ID,
             "sync_progression_data");
 
@@ -74,6 +75,21 @@ public class ProgressionPackets {
                         }
                     });
                 });
+
+        // Unlock staff skill - requires UI level 25
+        ServerPlayNetworking.registerGlobalReceiver(UNLOCK_STAFF_SKILL_C2S,
+                (server, player, handler, buf, responseSender) -> {
+                    String skillName = buf.readString();
+                    server.execute(() -> {
+                        if (player instanceof ProgressionData data) {
+                            if (skillName.equals("fireball") && !data.isFireballSkillUnlocked()) {
+                                if (data.getCustomLevel() >= 25) {
+                                    data.setFireballSkillUnlocked(true);
+                                }
+                            }
+                        }
+                    });
+                });
     }
 
     public static void registerS2CPackets() {
@@ -90,6 +106,7 @@ public class ProgressionPackets {
                     float currentMana = buf.readFloat();
                     int maxMana = buf.readInt();
                     int manaRegen = buf.readInt();
+                    boolean fireballUnlocked = buf.readBoolean();
 
                     client.execute(() -> {
                         if (client.player instanceof ProgressionData data) {
@@ -104,6 +121,7 @@ public class ProgressionPackets {
                             data.setMaxManaLevel(maxMana);
                             data.setManaRegenLevel(manaRegen);
                             data.setCurrentMana(currentMana);
+                            data.setFireballSkillUnlocked(fireballUnlocked);
                         }
                     });
                 });
@@ -123,6 +141,7 @@ public class ProgressionPackets {
             buf.writeFloat(data.getCurrentMana());
             buf.writeInt(data.getMaxManaLevel());
             buf.writeInt(data.getManaRegenLevel());
+            buf.writeBoolean(data.isFireballSkillUnlocked());
             ServerPlayNetworking.send(player, SYNC_PROGRESSION_DATA_S2C, buf);
         }
     }

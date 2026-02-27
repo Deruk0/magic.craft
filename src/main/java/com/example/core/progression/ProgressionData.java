@@ -51,6 +51,10 @@ public interface ProgressionData {
 
     void consumeMana(float amount);
 
+    boolean isFireballSkillUnlocked();
+
+    void setFireballSkillUnlocked(boolean unlocked);
+
     void resetProgression();
 
     void syncProgressionData();
